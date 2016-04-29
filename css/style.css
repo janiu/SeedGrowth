@@ -1,0 +1,29 @@
+#container-fluid {
+	font-size: 30px;
+	background-color: #33ffff;
+}
+body{
+	
+}
+
+.title{
+	font-size: 70px;
+	text-align: center;
+	background-color: #33ffff;
+	
+}
+.menu {
+	height: 2000px;
+	text-align: center;
+	background-color: #33ffff;
+}
+
+.periodic{
+	width: 100px;
+	height: 100px;
+	background-color: #33ffff;
+}
+
+#buttonStartGame{
+	background-color: #4CAF50;
+}

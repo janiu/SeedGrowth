@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Title</title>
+<script type="text/javascript" src="js/script.js"></script>
+<link rel="stylesheet" href="css/style.css" type="text/css" />
+<link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+</head>
+<body>
+
+	<div id="container-fluid">
+		<div class="col-lg-4 menu">
+			<h1 class="title">Game of life</h1>
+			<br>
+			<form>
+				<p>TYPE</p>
+
+				<input type="radio" name="typeCondition" id="periodic" checked="checked">Periodic<br> <input type="radio" name="typeCondition" id="no-periodic">No-periodic<br>
+				<br>
+			</form>
+			<p>SIZE</p>
+			<form>
+				Width: &nbsp <input type="number" id="width" name="width" min="25" max="200" value="50"><br>
+				<br> Height: &nbsp<input type="number" id="height" name="height" min="25" max="200" value="50"><br>
+			</form>
+			<br>
+			<p>STRUCTURE</p>
+			<button id="buttonRandom" >Random</button>
+			<button id="buttonGilder" >Gilder</button>
+			<button id="buttonBlinker" >Blinker</button>
+			<button id="buttonBlock" >Block</button>
+			<button id="buttonMouse" >Mouse</button>
+			<br>
+			<br>
+			<button id="buttonStartGame" >Start Game</button>
+
+			<p id="demo"></p>
+
+		</div>
+
+		<div class="col-lg-8 menu">
+			<canvas id="myCanvas" width="2000px" height="2000px" > </canvas>
+		</div>
+
+
+	</div>
+</body>
+</html>
