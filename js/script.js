@@ -28,9 +28,9 @@ var gameOfLife = (function() {
 		elements.heightTable = document.getElementById("height");
 		elements.numberColors = document.getElementById("numberColors");
 		elements.canvas = document.getElementById("myCanvas");
+		elements.neighborhood = document.getElementById("neighborhood");
 		
 		variables.ctx = elements.canvas.getContext("2d");
-
 		
 		elements.buttonRandom.addEventListener('click', function() {
 			clearTimeout(variables.timer);
@@ -55,7 +55,15 @@ var gameOfLife = (function() {
 			createTable();
 			drawTable(variables.table);
 		}, false);
-		elements.buttonBlock.addEventListener('click', block, false);
+		
+		elements.buttonBlock.addEventListener('click', function() {
+			clearTimeout(variables.timer);
+			variables.ctx.clearRect(0, 0,elements.canvas.width, elements.canvas.height);
+			createTable();
+			setColors();
+			uniform();
+			drawTable(variables.table);
+		}, false);
 		elements.buttonMouse.addEventListener('click', mouse, false);
 
 	}
@@ -137,6 +145,28 @@ var gameOfLife = (function() {
 			variables.table[indexColumn][indexRow].color = i;
 			variables.table2[indexColumn][indexRow].state = 1;
 			variables.table2[indexColumn][indexRow].color = i;
+		}
+	}
+	
+	function uniform() {
+		var indexColumn = 0, indexRow = 0;
+		var difColumn= Math.round(variables.n/(Math.sqrt(variables.numberColors)+1));
+		var difRow=Math.round(variables.m/(Math.sqrt(variables.numberColors)+1));
+		indexColumn =difColumn;
+		indexRow = difRow;
+		for (var i = 0; i < variables.numberColors; i++) {
+			variables.table[indexColumn][indexRow].state = 1;
+			variables.table[indexColumn][indexRow].color = i;
+			variables.table2[indexColumn][indexRow].state = 1;
+			variables.table2[indexColumn][indexRow].color = i;
+			indexColumn=indexColumn+difColumn;			
+			if(indexColumn>variables.n-1){
+				indexColumn=difColumn
+				indexRow=indexRow+difRow;
+			}
+			if(indexRow>variables.m-1){
+				indexRow=difRow;
+			}
 		}
 	}
 	
@@ -244,36 +274,60 @@ var gameOfLife = (function() {
 		return true;
 	}
 	
-	
 	function growth(table, table2, numberCellsColors) {
 		for(var i=0 ; i<variables.n; i++){
 			for(var j=0 ; j<variables.m ; j++){
 				if(table[i][j].state == 1){
 					if (variables.typeCondition == true) {
-						moorePeriodic(i, j, table, table2, numberCellsColors);
+						if(elements.neighborhood.value=="Moore"){
+							moorePeriodic(i, j, table, table2, numberCellsColors);
+						}
+						if(elements.neighborhood.value=="Von neumann"){
+							console.log(elements.neighborhood.value);
+						}
+						if(elements.neighborhood.value=="Hexagonal left"){
+							console.log(elements.neighborhood.value);
+						}
+						if(elements.neighborhood.value=="Hexagonal right"){
+							console.log(elements.neighborhood.value);
+						}
+						if(elements.neighborhood.value=="Hexagonal random"){
+							console.log(elements.neighborhood.value);
+						}
+						if(elements.neighborhood.value=="Pentagonal random"){
+							console.log(elements.neighborhood.value);
+						}
 					} else {
-						mooreNoPeriodic(i, j, table, table2, numberCellsColors);
+						if(elements.neighborhood.value=="Moore"){
+							mooreNoPeriodic(i, j, table, table2, numberCellsColors);
+						}
+						if(elements.neighborhood.value=="Von neumann"){
+							console.log(elements.neighborhood.value);
+						}
+						if(elements.neighborhood.value=="Hexagonal left"){
+							console.log(elements.neighborhood.value);
+						}
+						if(elements.neighborhood.value=="Hexagonal right"){
+							console.log(elements.neighborhood.value);
+						}
+						if(elements.neighborhood.value=="Hexagonal random"){
+							console.log(elements.neighborhood.value);
+						}
+						if(elements.neighborhood.value=="Pentagonal random"){
+							console.log(elements.neighborhood.value);
+						}
 					}
 				}
 			}
 		}
 	}
 	
-	
-	/********************************************************************************************************/
-	
-	
-	
-	
-	
 	function mouse() {
-//		createTable();
 		elements.canvas.addEventListener('mousedown', function(evt) {
 			var mousePos = getMousePos(elements.canvas, evt);
 			var tx = Math.round(mousePos.x / 10);
 			var ty = Math.round(mousePos.y / 10);
 			var colorNum = Math.floor((Math.random() * variables.numberColors));
-			
 			variables.ctx.fillStyle = variables.tableColors[colorNum];
 			variables.ctx.fillRect(tx * 10, ty * 10, 10, 10);
 			variables.table[tx][ty].state = 1;
@@ -289,158 +343,5 @@ var gameOfLife = (function() {
 			y : Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top)
 					* canvas.height)
 		};
-	}
-
-	function glider() {
-		createTable();
-		variables.table[10][3].state = 1;
-		variables.table[11][3].state = 1;
-		variables.table[12][3].state = 1;
-		variables.table[10][4].state = 1;
-		variables.table[11][5].state = 1;
-		for (var i = 0; i < variables.n; i++) {
-			for (var j = 0; j < variables.m; j++) {
-				variables.table2[i][j].state = variables.table[i][j].state;
-			}
-		}
-	}
-
-	function blinker() {
-		createTable();
-		variables.table[10][10].state = 1;
-		variables.table[10][11].state = 1;
-		variables.table[10][12].state = 1;
-		for (var i = 0; i < variables.n; i++) {
-			for (var j = 0; j < variables.m; j++) {
-				variables.table2[i][j].state = variables.table[i][j].state;
-			}
-		}
-	}
-
-	function block() {
-		createTable();
-		variables.table[10][10].state = 1;
-		variables.table[11][11].state = 1;
-		variables.table[10][11].state = 1;
-		variables.table[11][10].state = 1;
-		for (var i = 0; i < variables.n; i++) {
-			for (var j = 0; j < variables.m; j++) {
-				variables.table2[i][j].state = variables.table[i][j].state;
-			}
-		}
-	}
-
-
-	function updateTable2() {
-		var sum = 0;
-		for (var i = 0; i < variables.n; i++) {
-			for (var j = 0; j < variables.m; j++) {
-				if (variables.typeCondition == true) {
-					sum = countActiveNeighboursPeriodic(i, j, variables.table);
-				} else {
-					sum = countActiveNeighboursNoPeriodic(i, j, variables.table);
-				}
-				if (variables.table[i][j].state == 0) {
-					if (sum == 3) {
-						variables.table2[i][j].state = 1;
-					} else {
-						variables.table2[i][j].state = 0;
-					}
-				} else {
-					if (sum == 2 || sum == 3) {
-						variables.table2[i][j].state = 1;
-					} else {
-						variables.table2[i][j].state = 0;
-					}
-				}
-			}
-		}
-	}
-
-	function updateTable1() {
-		var sum;
-		for (var i = 0; i < variables.n; i++) {
-			for (var j = 0; j < variables.m; j++) {
-				if (variables.typeCondition == true) {
-					sum = countActiveNeighboursPeriodic(i, j, variables.table2);
-				} else {
-					sum = countActiveNeighboursNoPeriodic(i, j,
-							variables.table2);
-				}
-				if (variables.table2[i][j].state == 0) {
-					if (sum == 3) {
-						variables.table[i][j].state = 1;
-					} else {
-						variables.table[i][j].state = 0;
-					}
-				} else {
-					if (sum == 2 || sum == 3) {
-						variables.table[i][j].state = 1;
-					} else {
-						variables.table[i][j].state = 0;
-					}
-					sum = 0;
-				}
-			}
-		}
-	}
-
-	function draw() {
-		updateTable1();
-		for (var i = 0; i < variables.n; i++) {
-			for (var j = 0; j < variables.m; j++) {
-				if (variables.table[i][j].state == 1) {
-					variables.ctx.fillStyle = "red";
-				} else {
-					variables.ctx.fillStyle = "black";
-				}
-				variables.ctx.fillRect(i * 10, j * 10, 10, 10);
-			}
-		}
-		setTimeout(draw2, 50);
-	}
-
-	function draw2() {
-		updateTable2();
-		for (var i = 0; i < variables.n; i++) {
-			for (var j = 0; j < variables.m; j++) {
-				if (variables.table2[i][j].state == 1) {
-					variables.ctx.fillStyle = "red";
-				} else {
-					variables.ctx.fillStyle = "black";
-				}
-				variables.ctx.fillRect(i * 10, j * 10, 10, 10);
-			}
-		}
-		setTimeout(draw, 50);
-	}
-
-	function countActiveNeighboursPeriodic(x, y, table) {
-		var sum = 0;
-		var temp1 = 0;
-		var temp2 = 0;
-		for (var i = x - 1; i <= (x + 1); i++) {
-			for (var j = y - 1; j <= (y + 1); j++) {
-				temp1 = i;
-				temp2 = j;
-				if (y == temp2 && x == temp1)
-					continue;
-				if (temp1 == -1) {
-					temp1 = variables.n - 1;
-				}
-				if (temp1 == variables.n) {
-					temp1 = 0;
-				}
-				if (temp2 == -1) {
-					temp2 = variables.m - 1;
-				}
-				if (temp2 == variables.m) {
-					temp2 = 0;
-				}
-				if (table[temp1][temp2].state == 1)
-					sum++;
-			}
-		}
-		return sum;
 	}
 }());
