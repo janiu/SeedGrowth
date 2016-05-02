@@ -9,51 +9,60 @@ var gameOfLife = (function() {
 		typeCondition : true,
 		canvas : 0,
 		ctx : 0,
-		numberColors : 10,
+		numberColors : 4,
 		tableColors : [],
 		numberCellsColors1: [],
-		numberCellsColors2: []
+		numberCellsColors2: [],
+		timer: 0
 	};
 	var elements = {};
 
 	function startPage() {
 		elements.buttonRandom = document.getElementById("buttonRandom");
 		elements.buttonStartGame = document.getElementById("buttonStartGame");
-		elements.buttonGilder = document.getElementById("buttonGilder");
+		elements.buttonStop = document.getElementById("buttonStop");
 		elements.buttonBlinker = document.getElementById("buttonBlinker");
 		elements.buttonBlock = document.getElementById("buttonBlock");
 		elements.buttonMouse = document.getElementById("buttonMouse");
 		elements.widthTable = document.getElementById("width");
 		elements.heightTable = document.getElementById("height");
+		elements.numberColors = document.getElementById("numberColors");
 		elements.canvas = document.getElementById("myCanvas");
+		
+		variables.ctx = elements.canvas.getContext("2d");
 
-		elements.buttonRandom.addEventListener('click', random, false);
-		elements.buttonStartGame.addEventListener('click', execute, false);
-		elements.buttonGilder.addEventListener('click', glider, false);
+		
+		elements.buttonRandom.addEventListener('click', function() {
+			clearTimeout(variables.timer);
+			variables.ctx.clearRect(0, 0,elements.canvas.width, elements.canvas.height);
+			createTable();
+			setColors();
+			random();
+			drawTable(variables.table);
+		}, false);
+		
+		elements.buttonStartGame.addEventListener('click', function() {
+			execute(variables.table, variables.table2, variables.numberCellsColors1, variables.numberCellsColors2);
+		}, false);
+		
+		elements.buttonStop.addEventListener('click', function() {
+			clearTimeout(variables.timer);
+		}, false);
+		
 		elements.buttonBlinker.addEventListener('click', blinker, false);
 		elements.buttonBlock.addEventListener('click', block, false);
 		elements.buttonMouse.addEventListener('click', mouse, false);
 
-		variables.ctx = elements.canvas.getContext("2d");
-
-		createTable();
-		setColors();
-		random();
-		exe();
-	}
-	
-	function exe() {
-		growth(variables.table, variables.table2, variables.numberCellsColors1);
-		drawTable(variables.table2);
-		setTimeout(exe2, 100);
-	}
-	
-	function exe2() {
-		growth(variables.table2, variables.table, variables.numberCellsColors2);
-		drawTable(variables.table);
-		setTimeout(exe, 100);
 	}
 
+	function execute(table1, table2, numberCellsColors1, numberCellsColors2) {
+		growth(table1, table2, numberCellsColors1);
+		drawTable(table2);
+		variables.timer=setTimeout(function() {
+			execute(table2, table1, numberCellsColors2, numberCellsColors1);
+		}, 100);
+	}
+	
 	function setColors() {
 		variables.tableColors = new Array(variables.numberColors);
 		for (var i = 0; i < variables.numberColors; i++) {
@@ -64,6 +73,7 @@ var gameOfLife = (function() {
 	function createTable() {
 		variables.n = elements.widthTable.value;
 		variables.m = elements.heightTable.value;
+		variables.numberColors = elements.numberColors.value;
 		variables.typeCondition = document.getElementById("periodic").checked;
 		variables.table = new Array(variables.n);
 		for (var i = 0; i < variables.n; i++) {
@@ -174,6 +184,8 @@ var gameOfLife = (function() {
 	}
 	
 	
+	/********************************************************************************************************/
+	
 	
 	
 	
@@ -239,10 +251,6 @@ var gameOfLife = (function() {
 		}
 	}
 
-	function execute() {
-		variables.typeCondition = document.getElementById("periodic").checked;
-		draw2();
-	}
 
 	function updateTable2() {
 		var sum = 0;
