@@ -9,7 +9,7 @@ var gameOfLife = (function() {
 		typeCondition : true,
 		canvas : 0,
 		ctx : 0,
-		numberColors : 4,
+		numberColors : 0,
 		tableColors : [],
 		numberCellsColors1: [],
 		numberCellsColors2: [],
@@ -21,7 +21,7 @@ var gameOfLife = (function() {
 		elements.buttonRandom = document.getElementById("buttonRandom");
 		elements.buttonStartGame = document.getElementById("buttonStartGame");
 		elements.buttonStop = document.getElementById("buttonStop");
-		elements.buttonBlinker = document.getElementById("buttonBlinker");
+		elements.buttonClear = document.getElementById("buttonClear");
 		elements.buttonBlock = document.getElementById("buttonBlock");
 		elements.buttonMouse = document.getElementById("buttonMouse");
 		elements.widthTable = document.getElementById("width");
@@ -49,7 +49,12 @@ var gameOfLife = (function() {
 			clearTimeout(variables.timer);
 		}, false);
 		
-		elements.buttonBlinker.addEventListener('click', blinker, false);
+		elements.buttonClear.addEventListener('click', function() {
+			clearTimeout(variables.timer);
+			variables.ctx.clearRect(0, 0,elements.canvas.width, elements.canvas.height);
+			createTable();
+			drawTable(variables.table);
+		}, false);
 		elements.buttonBlock.addEventListener('click', block, false);
 		elements.buttonMouse.addEventListener('click', mouse, false);
 
@@ -135,7 +140,7 @@ var gameOfLife = (function() {
 		}
 	}
 	
-	function getNeighboursNoPeriodic(x, y, table, table2, numberCellsColors) {
+	function mooreNoPeriodic(x, y, table, table2, numberCellsColors) {
 		for (var i = x - 1; i <= (x + 1); i++) {
 			for (var j = y - 1; j <= (y + 1); j++) {
 				if (y == j && x == i){
@@ -147,7 +152,7 @@ var gameOfLife = (function() {
 					continue;
 				}
 				if (table[i][j].state == 0){					
-					if(checkColorNeighboursNoPeriodic(i, j, table, table[x][y].color,numberCellsColors)){						
+					if(mooreCheckColorNeighboursNoPeriodic(i, j, table, table[x][y].color,numberCellsColors)){						
 						table2[i][j].state=1;
 						table2[i][j].color=table[x][y].color;
 						numberCellsColors[table2[i][j].color]++;	
@@ -157,7 +162,7 @@ var gameOfLife = (function() {
 		}
 	}
 	
-	function checkColorNeighboursNoPeriodic(x, y, table, mainColor, numberCellsColors) {	
+	function mooreCheckColorNeighboursNoPeriodic(x, y, table, mainColor, numberCellsColors) {	
 		for (var i = x - 1; i <= (x + 1); i++) {
 			for (var j = y - 1; j <= (y + 1); j++) {
 				if (y == j && x == i)
@@ -173,11 +178,82 @@ var gameOfLife = (function() {
 		return true;
 	}
 	
+	function moorePeriodic(x, y, table, table2, numberCellsColors) {
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					table2[temp1][temp2].state=1;
+					table2[temp1][temp2].color=table[temp1][temp2].color;
+					continue;	
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 0){					
+					if(mooreCheckColorNeighboursPeriodic(temp1, temp2, table, table[x][y].color,numberCellsColors)){						
+						table2[temp1][temp2].state=1;
+						table2[temp1][temp2].color=table[x][y].color;
+						numberCellsColors[table2[temp1][temp2].color]++;	
+					}
+				}			
+			}
+		}
+	}
+	
+	function mooreCheckColorNeighboursPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					continue;	
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 1 && table[temp1][temp2].color != mainColor && numberCellsColors[table[temp1][temp2].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	
 	function growth(table, table2, numberCellsColors) {
 		for(var i=0 ; i<variables.n; i++){
 			for(var j=0 ; j<variables.m ; j++){
 				if(table[i][j].state == 1){
-					getNeighboursNoPeriodic(i, j, table, table2, numberCellsColors);
+					if (variables.typeCondition == true) {
+						moorePeriodic(i, j, table, table2, numberCellsColors);
+					} else {
+						mooreNoPeriodic(i, j, table, table2, numberCellsColors);
+					}
 				}
 			}
 		}
@@ -191,14 +267,17 @@ var gameOfLife = (function() {
 	
 	
 	function mouse() {
-		createTable();
+//		createTable();
 		elements.canvas.addEventListener('mousedown', function(evt) {
 			var mousePos = getMousePos(elements.canvas, evt);
 			var tx = Math.round(mousePos.x / 10);
 			var ty = Math.round(mousePos.y / 10);
-			variables.ctx.fillStyle = "red";
+			var colorNum = Math.floor((Math.random() * variables.numberColors));
+			
+			variables.ctx.fillStyle = variables.tableColors[colorNum];
 			variables.ctx.fillRect(tx * 10, ty * 10, 10, 10);
 			variables.table[tx][ty].state = 1;
+			variables.table[tx][ty].color = colorNum;
 		}, false);
 	}
 
