@@ -26,13 +26,16 @@
 			</form>
 			<br>
 			<p>STRUCTURE</p>
-			Number type of seeds:&nbsp <input type="number" id="numberColors" name="numberColor" min="1" max="50" value="2"><br>
+			Number type of seeds:&nbsp <input type="number" id="numberColors" name="numberColor" min="1" max="50" value="4"><br>
 			<br>
  			<button id="buttonRandom" >Random</button>
 			<button id="buttonStop" >Stop</button>
 			<button id="buttonClear" >Clear</button>
 			<button id="buttonBlock" >Uniform</button>
 			<button id="buttonMouse" >Mouse</button>
+			<br>
+			<input type="number" id="radius" name="radius" min="1" max="50" value="2">
+			<button id="buttonRadius" >Random radius</button>
 			<br>
 			<br>
 			<p>NEIGHBORHOOD</p>
@@ -45,10 +48,9 @@
 				<option>Pentagonal random</option>
 			</select>
 			<br>
+			<br>
 			<button id="buttonStartGame" >Start</button>
-
 			<p id="demo"></p>
-
 		</div>
 
 		<div class="col-lg-8 menu">

@@ -29,6 +29,8 @@ var gameOfLife = (function() {
 		elements.numberColors = document.getElementById("numberColors");
 		elements.canvas = document.getElementById("myCanvas");
 		elements.neighborhood = document.getElementById("neighborhood");
+		elements.buttonRadius = document.getElementById("buttonRadius");
+		elements.radius = document.getElementById("radius");
 		
 		variables.ctx = elements.canvas.getContext("2d");
 		
@@ -65,7 +67,14 @@ var gameOfLife = (function() {
 			drawTable(variables.table);
 		}, false);
 		elements.buttonMouse.addEventListener('click', mouse, false);
-
+		elements.buttonRadius.addEventListener('click', function() {
+			clearTimeout(variables.timer);
+			variables.ctx.clearRect(0, 0,elements.canvas.width, elements.canvas.height);
+			createTable();
+			setColors();
+			randomRadius();
+			drawTable(variables.table);
+		}, false);
 	}
 
 	function execute(table1, table2, numberCellsColors1, numberCellsColors2) {
@@ -146,6 +155,41 @@ var gameOfLife = (function() {
 			variables.table2[indexColumn][indexRow].state = 1;
 			variables.table2[indexColumn][indexRow].color = i;
 		}
+	}
+	
+	function randomRadius() {
+		var indexColumn = 0, indexRow = 0, counter=0,condition=false;
+		for (var i = 0; i < variables.numberColors; i++) {
+			do {
+				indexColumn = Math.round(Math.random() * (variables.n - 1));
+				indexRow = Math.round(Math.random() * (variables.m - 1));
+				condition = checkAvailability(indexColumn,indexRow);
+				counter++;
+				if(counter>700){
+					alert("Error");
+				}
+			} while (condition);
+			counter=0;
+			variables.table[indexColumn][indexRow].state = 1;
+			variables.table[indexColumn][indexRow].color = i;
+			variables.table2[indexColumn][indexRow].state = 1;
+			variables.table2[indexColumn][indexRow].color = i;
+		}
+	}
+	
+	function checkAvailability(indexColumn,indexRow) {
+		for(var i=0 ; i<variables.n ; i++){
+			for (var j = 0; j < variables.m; j++) {
+				if(variables.table[i][j].state == 1){
+					if(indexColumn > (i-elements.radius.value) &&  indexColumn < (i+elements.radius.value)){
+						if(indexRow > (j-elements.radius.value) &&  indexRow < (j+elements.radius.value)){
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	function uniform() {
