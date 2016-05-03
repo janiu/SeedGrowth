@@ -167,6 +167,7 @@ var gameOfLife = (function() {
 				counter++;
 				if(counter>700){
 					alert("Error");
+					location.reload(false);
 				}
 			} while (condition);
 			counter=0;
