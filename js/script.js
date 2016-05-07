@@ -159,13 +159,13 @@ var gameOfLife = (function() {
 	
 	function randomRadius() {
 		setTimeout(function() {
-			var indexColumn = 0, indexRow = 0, counter=0;
+			var indexColumn = 0, indexRow = 0, counter=0, maxCounter=70000;
 			for (var i = 0; i < variables.numberColors; i++) {
 				do {
 					indexColumn = Math.round(Math.random() * (variables.n - 1));
 					indexRow = Math.round(Math.random() * (variables.m - 1));
 					counter++;
-					if(counter>100000){
+					if(counter>maxCounter){
 						alert("Lack of space");
 						location.reload(false);
 					}
@@ -175,6 +175,25 @@ var gameOfLife = (function() {
 						if(d < elements.radius.value){
 							return true;
 						}
+						if(variables.typeCondition == true){
+							maxCounter=30000;
+							if(indexColumn+elements.radius.value > variables.n){
+								indexColumn = elements.radius.value - (variables.n - indexColumn);
+							}
+							if(indexColumn-elements.radius.value < 0){
+								indexColumn = variables.n - ( elements.radius.value- indexColumn);
+							}						
+							if(indexRow+elements.radius.value > variables.m){
+								indexRow = elements.radius.value - (variables.m - indexRow);
+							}
+							if(indexRow-elements.radius.value < 0){
+								indexRow = variables.m - ( elements.radius.value- indexRow);
+							}
+							var d = Math.sqrt(Math.pow(indexColumn-variables.activeCells[i].x, 2) + Math.pow(indexRow-variables.activeCells[i].y, 2));
+							if(d < elements.radius.value){
+								return true;
+							}
+						}						
 					}
 					return false;
 				}());
@@ -323,6 +342,667 @@ var gameOfLife = (function() {
 		return true;
 	}
 	
+	
+	//*******************************************************************************************************************//
+	
+	function vonNeumanNoPeriodic(x, y, table, table2, numberCellsColors) {
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i){
+					table2[i][j].state=1;
+					table2[i][j].color=table[i][j].color;
+					continue;					
+				}		
+				if((i==x-1 && j==y-1) ||  (i==x-1 && j==y+1) || (i==x+1 && j==y-1)  || (i==x+1 && j==y+1)){
+					continue;
+				}				
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m){
+					continue;
+				}
+				if (table[i][j].state == 0){					
+					if(mooreCheckColorNeighboursNoPeriodic(i, j, table, table[x][y].color,numberCellsColors)){						
+						table2[i][j].state=1;
+						table2[i][j].color=table[x][y].color;
+						numberCellsColors[table2[i][j].color]++;	
+					}
+				}					
+			}
+		}
+	}
+	
+	function vonNeumanCheckColorNeighboursNoPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i)
+					continue;
+				if((i==x-1 && j==y-1) ||  (i==x-1 && j==y+1) || (i==x+1 && j==y-1)  || (i==x+1 && j==y+1)){
+					continue;
+				}
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m)
+					continue;	
+				if (table[i][j].state == 1 && table[i][j].color != mainColor && numberCellsColors[table[i][j].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	function vonNeumanPeriodic(x, y, table, table2, numberCellsColors) {
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					table2[temp1][temp2].state=1;
+					table2[temp1][temp2].color=table[temp1][temp2].color;
+					continue;	
+				}
+				if((temp1==x-1 && temp2==y-1) ||  (temp1==x-1 && temp2==y+1) || (temp1==x+1 && temp2==y-1)  || (temp1==x+1 && temp2==y+1)){
+					continue;
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 0){					
+					if(mooreCheckColorNeighboursPeriodic(temp1, temp2, table, table[x][y].color,numberCellsColors)){						
+						table2[temp1][temp2].state=1;
+						table2[temp1][temp2].color=table[x][y].color;
+						numberCellsColors[table2[temp1][temp2].color]++;	
+					}
+				}			
+			}
+		}
+	}
+	
+	function vonNeumanCheckColorNeighboursPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					continue;	
+				}
+				if((temp1==x-1 && temp2==y-1) ||  (temp1==x-1 && temp2==y+1) || (temp1==x+1 && temp2==y-1)  || (temp1==x+1 && temp2==y+1)){
+					continue;
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 1 && table[temp1][temp2].color != mainColor && numberCellsColors[table[temp1][temp2].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	
+	//*******************************************************************************************************************//
+	
+		function hexaLeftNoPeriodic(x, y, table, table2, numberCellsColors) {
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i){
+					table2[i][j].state=1;
+					table2[i][j].color=table[i][j].color;
+					continue;					
+				}		
+				if(  (i==x-1 && j==y+1) || (i==x+1 && j==y-1) ){
+					continue;
+				}				
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m){
+					continue;
+				}
+				if (table[i][j].state == 0){					
+					if(mooreCheckColorNeighboursNoPeriodic(i, j, table, table[x][y].color,numberCellsColors)){						
+						table2[i][j].state=1;
+						table2[i][j].color=table[x][y].color;
+						numberCellsColors[table2[i][j].color]++;	
+					}
+				}					
+			}
+		}
+	}
+	
+	function hexaLeftCheckColorNeighboursNoPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i)
+					continue;
+				if(  (i==x-1 && j==y+1) || (i==x+1 && j==y-1)  ){
+					continue;
+				}
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m)
+					continue;	
+				if (table[i][j].state == 1 && table[i][j].color != mainColor && numberCellsColors[table[i][j].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	function hexaLeftPeriodic(x, y, table, table2, numberCellsColors) {
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					table2[temp1][temp2].state=1;
+					table2[temp1][temp2].color=table[temp1][temp2].color;
+					continue;	
+				}
+				if( (temp1==x-1 && temp2==y+1) || (temp1==x+1 && temp2==y-1)  ){
+					continue;
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 0){					
+					if(mooreCheckColorNeighboursPeriodic(temp1, temp2, table, table[x][y].color,numberCellsColors)){						
+						table2[temp1][temp2].state=1;
+						table2[temp1][temp2].color=table[x][y].color;
+						numberCellsColors[table2[temp1][temp2].color]++;	
+					}
+				}			
+			}
+		}
+	}
+	
+	function hexaLeftCheckColorNeighboursPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					continue;	
+				}
+				if( (temp1==x-1 && temp2==y+1) || (temp1==x+1 && temp2==y-1)  ){
+					continue;
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 1 && table[temp1][temp2].color != mainColor && numberCellsColors[table[temp1][temp2].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	
+	//*******************************************************************************************************************//
+	
+			function hexaRightNoPeriodic(x, y, table, table2, numberCellsColors) {
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i){
+					table2[i][j].state=1;
+					table2[i][j].color=table[i][j].color;
+					continue;					
+				}		
+				if(  (i==x-1 && j==y-1) || (i==x+1 && j==y+1) ){
+					continue;
+				}				
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m){
+					continue;
+				}
+				if (table[i][j].state == 0){					
+					if(mooreCheckColorNeighboursNoPeriodic(i, j, table, table[x][y].color,numberCellsColors)){						
+						table2[i][j].state=1;
+						table2[i][j].color=table[x][y].color;
+						numberCellsColors[table2[i][j].color]++;	
+					}
+				}					
+			}
+		}
+	}
+	
+	function hexaRightCheckColorNeighboursNoPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i)
+					continue;
+				if(  (i==x-1 && j==y-1) || (i==x+1 && j==y+1)  ){
+					continue;
+				}
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m)
+					continue;	
+				if (table[i][j].state == 1 && table[i][j].color != mainColor && numberCellsColors[table[i][j].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	function hexaRightPeriodic(x, y, table, table2, numberCellsColors) {
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					table2[temp1][temp2].state=1;
+					table2[temp1][temp2].color=table[temp1][temp2].color;
+					continue;	
+				}
+				if( (temp1==x-1 && temp2==y-1) || (temp1==x+1 && temp2==y+1)  ){
+					continue;
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 0){					
+					if(mooreCheckColorNeighboursPeriodic(temp1, temp2, table, table[x][y].color,numberCellsColors)){						
+						table2[temp1][temp2].state=1;
+						table2[temp1][temp2].color=table[x][y].color;
+						numberCellsColors[table2[temp1][temp2].color]++;	
+					}
+				}			
+			}
+		}
+	}
+	
+	function hexaRightCheckColorNeighboursPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					continue;	
+				}
+				if( (temp1==x-1 && temp2==y-1) || (temp1==x+1 && temp2==y+1)  ){
+					continue;
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 1 && table[temp1][temp2].color != mainColor && numberCellsColors[table[temp1][temp2].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	
+	//*******************************************************************************************************************//
+	
+	
+	
+			function hexaRandNoPeriodic(x, y, table, table2, numberCellsColors) {
+				var random = Math.floor(Math.random() * 2);
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i){
+					table2[i][j].state=1;
+					table2[i][j].color=table[i][j].color;
+					continue;					
+				}		
+								
+				if(random==1){
+					if(  (i==x-1 && j==y-1) || (i==x+1 && j==y+1) ){
+					continue;
+				}
+				}else{
+									if( (i==x-1 && j==y+1) || (i==x+1 && j==y-1)  ){
+					continue;
+				}
+				}
+				
+								
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m){
+					continue;
+				}
+				if (table[i][j].state == 0){					
+					if(mooreCheckColorNeighboursNoPeriodic(i, j, table, table[x][y].color,numberCellsColors)){						
+						table2[i][j].state=1;
+						table2[i][j].color=table[x][y].color;
+						numberCellsColors[table2[i][j].color]++;	
+					}
+				}					
+			}
+		}
+	}
+	
+	function hexaRandCheckColorNeighboursNoPeriodic(x, y, table, mainColor, numberCellsColors) {	
+	var random = Math.floor(Math.random() * 2);
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i)
+					continue;
+				if(random==1){
+					if(  (i==x-1 && j==y-1) || (i==x+1 && j==y+1) ){
+					continue;
+				}
+				}else{
+					if( (i==x-1 && j==y+1) || (i==x+1 && j==y-1)  ){
+					continue;
+				}
+				}
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m)
+					continue;	
+				if (table[i][j].state == 1 && table[i][j].color != mainColor && numberCellsColors[table[i][j].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	function hexaRandPeriodic(x, y, table, table2, numberCellsColors) {
+		var random = Math.floor(Math.random() * 2);
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					table2[temp1][temp2].state=1;
+					table2[temp1][temp2].color=table[temp1][temp2].color;
+					continue;	
+				}
+				if(random==1){
+					if(  (temp1==x-1 && temp2==y-1) || (temp1==x+1 && temp2==y+1) ){
+					continue;
+				}
+				}else{
+				if( (temp1==x-1 && temp2==y+1) || (temp1==x+1 && temp2==y-1)  ){
+					continue;
+				}
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 0){					
+					if(mooreCheckColorNeighboursPeriodic(temp1, temp2, table, table[x][y].color,numberCellsColors)){						
+						table2[temp1][temp2].state=1;
+						table2[temp1][temp2].color=table[x][y].color;
+						numberCellsColors[table2[temp1][temp2].color]++;	
+					}
+				}			
+			}
+		}
+	}
+	
+	function hexaRandCheckColorNeighboursPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					continue;	
+				}
+								if(random==1){
+					if(  (temp1==x-1 && temp2==y-1) || (temp1==x+1 && temp2==y+1) ){
+					continue;
+				}
+				}else{
+				if( (temp1==x-1 && temp2==y+1) || (temp1==x+1 && temp2==y-1)  ){
+					continue;
+				}
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 1 && table[temp1][temp2].color != mainColor && numberCellsColors[table[temp1][temp2].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	//*******************************************************************************************************************//
+	
+	
+				function pentaRandNoPeriodic(x, y, table, table2, numberCellsColors) {
+				var random = Math.floor(Math.random() * 2);
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i){
+					table2[i][j].state=1;
+					table2[i][j].color=table[i][j].color;
+					continue;					
+				}		
+								
+				if(random==1){
+					if(  (i==x+1 && j==y-1) || (i==x+1 && j==y)|| (i==x+1 && j==y+1) ){
+					continue;
+				}
+				}else{
+				if(  (i==x-1 && j==y-1) || (i==x-1 && j==y)|| (i==x-1 && j==y+1) ){
+					continue;
+				}
+				}
+				
+								
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m){
+					continue;
+				}
+				if (table[i][j].state == 0){					
+					if(mooreCheckColorNeighboursNoPeriodic(i, j, table, table[x][y].color,numberCellsColors)){						
+						table2[i][j].state=1;
+						table2[i][j].color=table[x][y].color;
+						numberCellsColors[table2[i][j].color]++;	
+					}
+				}					
+			}
+		}
+	}
+	
+	function pentaRandCheckColorNeighboursNoPeriodic(x, y, table, mainColor, numberCellsColors) {	
+	var random = Math.floor(Math.random() * 2);
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				if (y == j && x == i)
+					continue;
+				
+				if(random==1){
+					if(  (i==x+1 && j==y-1) || (i==x+1 && j==y)|| (i==x+1 && j==y+1) ){
+					continue;
+				}
+				}else{
+				if(  (i==x-1 && j==y-1) || (i==x-1 && j==y)|| (i==x-1 && j==y+1) ){
+					continue;
+				}
+				}
+				if (i == -1 || i == variables.n || j == -1 || j == variables.m)
+					continue;	
+				if (table[i][j].state == 1 && table[i][j].color != mainColor && numberCellsColors[table[i][j].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	function pentaRandPeriodic(x, y, table, table2, numberCellsColors) {
+		var random = Math.floor(Math.random() * 2);
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					table2[temp1][temp2].state=1;
+					table2[temp1][temp2].color=table[temp1][temp2].color;
+					continue;	
+				}
+				if(random==1){
+					if(  (temp1==x+1 && temp2==y-1) || (temp1==x+1 && temp2==y)|| (temp1==x+1 && temp2==y+1) ){
+					continue;
+				}
+				}else{
+				if(  (temp1==x-1 && temp2==y-1) || (temp1==x-1 && temp2==y)|| (temp1==x-1 && temp2==y+1) ){
+					continue;
+				}
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 0){					
+					if(mooreCheckColorNeighboursPeriodic(temp1, temp2, table, table[x][y].color,numberCellsColors)){						
+						table2[temp1][temp2].state=1;
+						table2[temp1][temp2].color=table[x][y].color;
+						numberCellsColors[table2[temp1][temp2].color]++;	
+					}
+				}			
+			}
+		}
+	}
+	
+	function pentaRandCheckColorNeighboursPeriodic(x, y, table, mainColor, numberCellsColors) {	
+		var temp1 = 0;
+		var temp2 = 0;
+		for (var i = x - 1; i <= (x + 1); i++) {
+			for (var j = y - 1; j <= (y + 1); j++) {
+				temp1 = i;
+				temp2 = j;
+				if (y == temp2 && x == temp1){
+					continue;	
+				}
+								
+				if(random==1){
+					if(  (temp1==x+1 && temp2==y-1) || (temp1==x+1 && temp2==y)|| (temp1==x+1 && temp2==y+1) ){
+					continue;
+				}
+				}else{
+				if(  (temp1==x-1 && temp2==y-1) || (temp1==x-1 && temp2==y)|| (temp1==x-1 && temp2==y+1) ){
+					continue;
+				}
+				}
+				if (temp1 == -1) {
+					temp1 = variables.n - 1;
+				}
+				if (temp1 == variables.n) {
+					temp1 = 0;
+				}
+				if (temp2 == -1) {
+					temp2 = variables.m - 1;
+				}
+				if (temp2 == variables.m) {
+					temp2 = 0;
+				}
+				if (table[temp1][temp2].state == 1 && table[temp1][temp2].color != mainColor && numberCellsColors[table[temp1][temp2].color] > numberCellsColors[mainColor]){
+					return false;
+				}	
+				
+			}
+		}
+		return true;
+	}
+	
+	//*******************************************************************************************************************//
+	
 	function growth(table, table2, numberCellsColors) {
 		for(var i=0 ; i<variables.n; i++){
 			for(var j=0 ; j<variables.m ; j++){
@@ -332,44 +1012,45 @@ var gameOfLife = (function() {
 							moorePeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Von neumann"){
-							console.log(elements.neighborhood.value);
+							vonNeumanPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Hexagonal left"){
-							console.log(elements.neighborhood.value);
+							hexaLeftPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Hexagonal right"){
-							console.log(elements.neighborhood.value);
+							hexaRightPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Hexagonal random"){
-							console.log(elements.neighborhood.value);
+							hexaRandPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Pentagonal random"){
-							console.log(elements.neighborhood.value);
+							pentaRandPeriodic(i, j, table, table2, numberCellsColors);
 						}
 					} else {
 						if(elements.neighborhood.value=="Moore"){
 							mooreNoPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Von neumann"){
-							console.log(elements.neighborhood.value);
+							vonNeumanNoPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Hexagonal left"){
-							console.log(elements.neighborhood.value);
+							hexaLeftNoPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Hexagonal right"){
-							console.log(elements.neighborhood.value);
+							hexaRightNoPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Hexagonal random"){
-							console.log(elements.neighborhood.value);
+							hexaRandNoPeriodic(i, j, table, table2, numberCellsColors);
 						}
 						if(elements.neighborhood.value=="Pentagonal random"){
-							console.log(elements.neighborhood.value);
+							pentaRandNoPeriodic(i, j, table, table2, numberCellsColors);
 						}
 					}
 				}
 			}
 		}
 	}
+	
 	
 	function mouse() {
 		elements.canvas.addEventListener('mousedown', function(evt) {
