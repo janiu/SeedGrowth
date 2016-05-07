@@ -13,7 +13,8 @@ var gameOfLife = (function() {
 		tableColors : [],
 		numberCellsColors1: [],
 		numberCellsColors2: [],
-		timer: 0
+		timer: 0,
+		activeCells : [] 
 	};
 	var elements = {};
 
@@ -22,7 +23,7 @@ var gameOfLife = (function() {
 		elements.buttonStartGame = document.getElementById("buttonStartGame");
 		elements.buttonStop = document.getElementById("buttonStop");
 		elements.buttonClear = document.getElementById("buttonClear");
-		elements.buttonBlock = document.getElementById("buttonBlock");
+		elements.buttonUniform = document.getElementById("buttonUniform");
 		elements.buttonMouse = document.getElementById("buttonMouse");
 		elements.widthTable = document.getElementById("width");
 		elements.heightTable = document.getElementById("height");
@@ -58,7 +59,7 @@ var gameOfLife = (function() {
 			drawTable(variables.table);
 		}, false);
 		
-		elements.buttonBlock.addEventListener('click', function() {
+		elements.buttonUniform.addEventListener('click', function() {
 			clearTimeout(variables.timer);
 			variables.ctx.clearRect(0, 0,elements.canvas.width, elements.canvas.height);
 			createTable();
@@ -73,7 +74,6 @@ var gameOfLife = (function() {
 			createTable();
 			setColors();
 			randomRadius();
-			drawTable(variables.table);
 		}, false);
 	}
 
@@ -158,39 +158,43 @@ var gameOfLife = (function() {
 	}
 	
 	function randomRadius() {
-		var indexColumn = 0, indexRow = 0, counter=0,condition=false;
-		for (var i = 0; i < variables.numberColors; i++) {
-			do {
-				indexColumn = Math.round(Math.random() * (variables.n - 1));
-				indexRow = Math.round(Math.random() * (variables.m - 1));
-				condition = checkAvailability(indexColumn,indexRow);
-				counter++;
-				if(counter>700){
-					alert("Error");
-					location.reload(false);
-				}
-			} while (condition);
-			counter=0;
-			variables.table[indexColumn][indexRow].state = 1;
-			variables.table[indexColumn][indexRow].color = i;
-			variables.table2[indexColumn][indexRow].state = 1;
-			variables.table2[indexColumn][indexRow].color = i;
-		}
-	}
-	
-	function checkAvailability(indexColumn,indexRow) {
-		for(var i=0 ; i<variables.n ; i++){
-			for (var j = 0; j < variables.m; j++) {
-				if(variables.table[i][j].state == 1){
-					if(indexColumn > (i-elements.radius.value) &&  indexColumn < (i+elements.radius.value)){
-						if(indexRow > (j-elements.radius.value) &&  indexRow < (j+elements.radius.value)){
+		setTimeout(function() {
+			var indexColumn = 0, indexRow = 0, counter=0;
+			for (var i = 0; i < variables.numberColors; i++) {
+				do {
+					indexColumn = Math.round(Math.random() * (variables.n - 1));
+					indexRow = Math.round(Math.random() * (variables.m - 1));
+					counter++;
+					if(counter>100000){
+						alert("Lack of space");
+						location.reload(false);
+					}
+				} while (function() {
+					for(var i=0 ; i<variables.activeCells.length ; i++){
+						var d = Math.sqrt(Math.pow(indexColumn-variables.activeCells[i].x, 2) + Math.pow(indexRow-variables.activeCells[i].y, 2));
+						if(d < elements.radius.value){
 							return true;
 						}
 					}
+					return false;
+				}());
+				counter=0;
+				variables.table[indexColumn][indexRow].state = 1;
+				variables.table[indexColumn][indexRow].color = i;
+				variables.table2[indexColumn][indexRow].state = 1;
+				variables.table2[indexColumn][indexRow].color = i;
+				var cell = {
+						x: indexColumn,
+						y: indexRow
 				}
+				variables.activeCells[variables.activeCells.length]=cell;
 			}
-		}
-		return false;
+			drawTable(variables.table);
+		}, 1);
+		
+		
+		
+	
 	}
 	
 	function uniform() {
