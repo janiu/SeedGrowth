@@ -32,6 +32,7 @@ var gameOfLife = (function() {
 		elements.neighborhood = document.getElementById("neighborhood");
 		elements.buttonRadius = document.getElementById("buttonRadius");
 		elements.radius = document.getElementById("radius");
+		elements.buttonContinuousGrowth = document.getElementById("buttonContinuousGrowth");
 		
 		variables.ctx = elements.canvas.getContext("2d");
 		
@@ -46,6 +47,9 @@ var gameOfLife = (function() {
 		
 		elements.buttonStartGame.addEventListener('click', function() {
 			execute(variables.table, variables.table2, variables.numberCellsColors1, variables.numberCellsColors2);
+		}, false);
+		elements.buttonContinuousGrowth.addEventListener('click', function() {
+			continuesGrowth(variables.table, variables.table2, variables.numberCellsColors1, variables.numberCellsColors2);
 		}, false);
 		
 		elements.buttonStop.addEventListener('click', function() {
@@ -84,6 +88,27 @@ var gameOfLife = (function() {
 			execute(table2, table1, numberCellsColors2, numberCellsColors1);
 		}, 100);
 	}
+	
+	function continuesGrowth(table1, table2, numberCellsColors1, numberCellsColors2) {
+		growth(table1, table2, numberCellsColors1);
+					
+					
+	
+			
+			var columnNewSeed = Math.round(Math.random() * (variables.n - 1));
+			var rowNewSeed = Math.round(Math.random() * (variables.m - 1));		
+			if(variables.table2[columnNewSeed][rowNewSeed].state!=1){
+						variables.tableColors[variables.tableColors.length] = getRandomColor();
+						variables.table2[columnNewSeed][rowNewSeed].state = 1;
+								variables.table2[columnNewSeed][rowNewSeed].color = variables.tableColors.length-1;
+		}
+		drawTable(table2);
+		variables.timer=setTimeout(function() {
+			continuesGrowth(table2, table1, numberCellsColors2, numberCellsColors1);
+		}, 100);
+	}
+	
+	
 	
 	function setColors() {
 		variables.tableColors = new Array(variables.numberColors);
@@ -218,8 +243,8 @@ var gameOfLife = (function() {
 	
 	function uniform() {
 		var indexColumn = 0, indexRow = 0;
-		var difColumn= Math.round(variables.n/(Math.sqrt(variables.numberColors)+1));
-		var difRow=Math.round(variables.m/(Math.sqrt(variables.numberColors)+1));
+		var difColumn= Math.round(variables.n/Math.ceil((Math.sqrt(variables.numberColors)+1)));
+		var difRow=Math.round(variables.m/Math.ceil((Math.sqrt(variables.numberColors)+1)));
 		indexColumn =difColumn;
 		indexRow = difRow;
 		for (var i = 0; i < variables.numberColors; i++) {
@@ -1057,11 +1082,11 @@ var gameOfLife = (function() {
 			var mousePos = getMousePos(elements.canvas, evt);
 			var tx = Math.round(mousePos.x / 10);
 			var ty = Math.round(mousePos.y / 10);
-			var colorNum = Math.floor((Math.random() * variables.numberColors));
-			variables.ctx.fillStyle = variables.tableColors[colorNum];
+			variables.tableColors[variables.tableColors.length-1] = getRandomColor();			
+			variables.ctx.fillStyle = variables.tableColors[variables.tableColors.length-1]
 			variables.ctx.fillRect(tx * 10, ty * 10, 10, 10);
 			variables.table[tx][ty].state = 1;
-			variables.table[tx][ty].color = colorNum;
+			variables.table[tx][ty].color = variables.tableColors.length-1;
 		}, false);
 	}
 
