@@ -95,12 +95,12 @@ var gameOfLife = (function() {
 					
 	
 			
-			var columnNewSeed = Math.round(Math.random() * (variables.n - 1));
-			var rowNewSeed = Math.round(Math.random() * (variables.m - 1));		
-			if(variables.table2[columnNewSeed][rowNewSeed].state!=1){
+			var columnNewGrain = Math.round(Math.random() * (variables.n - 1));
+			var rowNewGrain = Math.round(Math.random() * (variables.m - 1));		
+			if(variables.table2[columnNewGrain][rowNewGrain].state!=1){
 						variables.tableColors[variables.tableColors.length] = getRandomColor();
-						variables.table2[columnNewSeed][rowNewSeed].state = 1;
-								variables.table2[columnNewSeed][rowNewSeed].color = variables.tableColors.length-1;
+						variables.table2[columnNewGrain][rowNewGrain].state = 1;
+								variables.table2[columnNewGrain][rowNewGrain].color = variables.tableColors.length-1;
 		}
 		drawTable(table2);
 		variables.timer=setTimeout(function() {
