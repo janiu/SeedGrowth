@@ -1082,7 +1082,7 @@ var gameOfLife = (function() {
 			var mousePos = getMousePos(elements.canvas, evt);
 			var tx = Math.round(mousePos.x / 10);
 			var ty = Math.round(mousePos.y / 10);
-			variables.tableColors[variables.tableColors.length-1] = getRandomColor();			
+			variables.tableColors[variables.tableColors.length] = getRandomColor();			
 			variables.ctx.fillStyle = variables.tableColors[variables.tableColors.length-1]
 			variables.ctx.fillRect(tx * 10, ty * 10, 10, 10);
 			variables.table[tx][ty].state = 1;
